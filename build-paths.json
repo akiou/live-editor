@@ -151,10 +151,12 @@
         "external/multirecorderjs/multirecorder-worker.js"
     ],
     "externals": [
-        "bower_components/es5-shim/es5-shim.js",
         "external/jshint/jshint.js",
         "external/structuredjs/external/esprima.js",
-        "external/structuredjs/structured.js",
+        "external/structuredjs/structured.js"
+    ],
+    "externals_from_bower_components": [
+        "bower_components/es5-shim/es5-shim.js",
         "bower_components/underscore/underscore.js",
         "bower_components/soundmanager/swf/**"
     ],
