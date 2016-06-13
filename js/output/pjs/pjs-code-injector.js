@@ -50,14 +50,14 @@ class PJSCodeInjector {
         // During live coding all of the following state must be reset
         // when it's no longer used.
         this.liveReset = {
-            background: [255, 255, 255],
+            background: [0, 0, 0], // background: [255, 255, 255],
             colorMode: [1],
             ellipseMode: [3],
-            fill: [255, 255, 255],
+            fill: [0, 0, 0], // background: [255, 255, 255],
             frameRate: [60],
             imageMode: [0],
             rectMode: [0],
-            stroke: [0, 0, 0],
+            stroke: [255, 255, 255], // stroke: [0, 0, 0],
             strokeCap: ["round"],
             strokeWeight: [1],
             textAlign: [37, 0],
