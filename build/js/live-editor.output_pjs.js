@@ -1012,6 +1012,16 @@ var PJSCodeInjector = (function () {
             var ast = esprima.parse(code.replace(envNameRegex, ""), { loc: true });
 
             var astTransformPasses = [];
+            astTransformPasses.push(ASTTransforms.NewExpressionToFunction());
+            astTransformPasses.push(ASTTransforms.Add__objsCode());
+
+            try {
+                walkAST(ast, null, astTransformPasses);
+            } catch (e) {
+                return e;
+            }
+
+            astTransformPasses = [];
 
             // 'mutatingCalls' is undefined only when we are injecting code.
             // This is not perfect protection from users typing one of these banned

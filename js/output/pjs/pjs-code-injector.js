@@ -50,14 +50,14 @@ class PJSCodeInjector {
         // During live coding all of the following state must be reset
         // when it's no longer used.
         this.liveReset = {
-            background: [0, 0, 0], // background: [255, 255, 255],
+            background: [255, 255, 255],
             colorMode: [1],
             ellipseMode: [3],
-            fill: [0, 0, 0], // background: [255, 255, 255],
+            fill: [255, 255, 255],
             frameRate: [60],
             imageMode: [0],
             rectMode: [0],
-            stroke: [255, 255, 255], // stroke: [0, 0, 0],
+            stroke: [0, 0, 0],
             strokeCap: ["round"],
             strokeWeight: [1],
             textAlign: [37, 0],
@@ -960,6 +960,16 @@ class PJSCodeInjector {
         let ast = esprima.parse(code.replace(envNameRegex, ""), { loc: true });
 
         let astTransformPasses = [];
+        astTransformPasses.push(ASTTransforms.NewExpressionToFunction());
+        astTransformPasses.push(ASTTransforms.Add__objsCode());
+
+        try {
+            walkAST(ast, null, astTransformPasses);
+        } catch (e) {
+            return e;
+        }
+
+        astTransformPasses = []
 
         // 'mutatingCalls' is undefined only when we are injecting code.
         // This is not perfect protection from users typing one of these banned
