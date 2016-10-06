@@ -11654,6 +11654,15 @@ require("/tools/entry-point.js");
 
 window.ASTBuilder = {
     /**
+     * @param {Array} elements
+     */
+    ArrayExpression: function ArrayExpression(elements) {
+        return {
+            type: "ArrayExpression",
+            elements: elements
+        };
+    },
+    /**
      * @param {Expression} left
      * @param {string} operator: "=", "+=", "-=", "*=", "/=", etc.
      * @param {Expression} right
@@ -11709,6 +11718,36 @@ window.ASTBuilder = {
         };
     },
     /**
+     * @param {Statement} init
+     * @param {Expression} test
+     * @param {Expression} update
+     * @param {Statement} body
+     */
+    ForStatement: function ForStatement(init, test, update, body) {
+        return {
+            type: "ForStatement",
+            init: init,
+            test: test,
+            update: update,
+            body: body
+        };
+    },
+    /**
+     * @param {string} id
+     * @param {Array} params
+     * @param {Statement} body
+     */
+    FunctionExpression: function FunctionExpression(id, params, body) {
+        return {
+            type: "FunctionExpression",
+            id: id,
+            params: params,
+            body: body,
+            generator: false,
+            expression: false
+        };
+    },
+    /**
      * @param {string} name
      */
     Identifier: function Identifier(name) {
@@ -11757,6 +11796,26 @@ window.ASTBuilder = {
         };
     },
     /**
+     * @param {Identifier} callee
+     * @param {Array} args
+     */
+    NewExpression: function NewExpression(callee, args) {
+        return {
+            type: "NewExpression",
+            callee: callee,
+            arguments: args
+        };
+    },
+    /**
+     * @param {Expression?} argument
+     */
+    ReturnStatement: function ReturnStatement(argument) {
+        return {
+            type: "ReturnStatement",
+            argument: argument
+        };
+    },
+    /**
      * @param {Expression} argument
      * @param {string} operator: "++" or "--"
      * @param {Boolean} prefix: true => ++argument, false => argument++
@@ -11778,6 +11837,17 @@ window.ASTBuilder = {
             type: "VariableDeclaration",
             declarations: declarations,
             kind: kind
+        };
+    },
+    /**
+     * @param {String} id
+     * @param {Expression?} init
+     */
+    VariableDeclarator: function VariableDeclarator(id, init) {
+        return {
+            type: "VariableDeclarator",
+            id: id,
+            init: init
         };
     }
 };

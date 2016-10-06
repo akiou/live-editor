@@ -1,5 +1,14 @@
 window.ASTBuilder = {
     /**
+     * @param {Array} elements
+     */
+    ArrayExpression(elements) {
+        return {
+            type: "ArrayExpression",
+            elements: elements
+        };
+    },
+    /**
      * @param {Expression} left
      * @param {string} operator: "=", "+=", "-=", "*=", "/=", etc.
      * @param {Expression} right
@@ -48,11 +57,41 @@ window.ASTBuilder = {
     /**
      * @param {Expression} expression
      */
-        ExpressionStatement(expression) {
+    ExpressionStatement(expression) {
         return {
             type: "ExpressionStatement",
             expression: expression
         };
+    },
+    /**
+     * @param {Statement} init
+     * @param {Expression} test
+     * @param {Expression} update
+     * @param {Statement} body
+     */
+    ForStatement(init, test, update, body) {
+        return {
+            type: "ForStatement",
+            init: init,
+            test: test,
+            update: update,
+            body: body
+        }
+    },
+    /**
+     * @param {string} id
+     * @param {Array} params
+     * @param {Statement} body
+     */
+    FunctionExpression(id, params, body) {
+        return {
+            type: "FunctionExpression",
+            id: id,
+            params: params,
+            body: body,
+            generator: false,
+            expression: false
+        }
     },
     /**
      * @param {string} name
@@ -90,12 +129,32 @@ window.ASTBuilder = {
      * @param {Expression} property
      * @param {Boolean?} computed - true => obj[prop], false => obj.prop
      */
-        MemberExpression(object, property, computed = false) {
+    MemberExpression(object, property, computed = false) {
         return {
             type: "MemberExpression",
             object: object,
             property: property,
             computed: computed
+        };
+    },
+    /**
+     * @param {Identifier} callee
+     * @param {Array} args
+     */
+    NewExpression(callee, args) {
+        return {
+            type: "NewExpression",
+            callee: callee,
+            arguments: args
+        };
+    },
+    /**
+     * @param {Expression?} argument
+     */
+    ReturnStatement(argument) {
+        return {
+            type: "ReturnStatement",
+            argument: argument
         };
     },
     /**
@@ -120,6 +179,17 @@ window.ASTBuilder = {
             type: "VariableDeclaration",
             declarations: declarations,
             kind: kind
+        };
+    },
+    /**
+     * @param {String} id
+     * @param {Expression?} init
+     */
+    VariableDeclarator(id, init) {
+        return {
+            type: "VariableDeclarator",
+            id: id,
+            init: init
         };
     }
 };
