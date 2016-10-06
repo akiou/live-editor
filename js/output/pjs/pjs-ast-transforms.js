@@ -328,3 +328,112 @@ ASTTransforms.rewriteNewExpressions = function(envName) {
         }
     }
 };
+
+// before: new Hoge()
+// after:  function() {
+//             var temp = new Hoge();
+//             __env__.__objs.push(temp);
+//             return temp;
+//         }()
+ASTTransforms.NewExpressionToFunction = function() {
+    return {
+        leave(node, path) {
+            if (node.type === "NewExpression") {
+                const name = memberExpressionToString(node.callee);
+
+                return b.CallExpression(
+                    b.FunctionExpression(
+                        null,
+                        [],
+                        b.BlockStatement([
+                            b.VariableDeclaration(
+                                [b.VariableDeclarator(
+                                    b.Identifier("temp"),
+                                    b.NewExpression(
+                                        node.callee,
+                                        node.arguments
+                                    )
+                                )],
+                                "var"
+                            ),
+                            b.ExpressionStatement(
+                                b.CallExpression(
+                                    b.MemberExpression(
+                                        b.Identifier("__objs"),
+                                        b.Identifier("push")
+                                    ),
+                                    [b.Identifier("temp")]
+                                )
+                            ),
+                            b.ReturnStatement(
+                                b.Identifier("temp")
+                            )
+                        ])
+                    ),
+                    []
+                );
+            }
+        }
+    };
+}
+
+// Add "var __objs = [];" at the head of the code
+// (and "for (var i = 0; i < __objs.length; i++) {
+//           println(__objs[i])
+//       }" at the tail of the code)
+ASTTransforms.Add__objsCode = function() {
+    return {
+        leave(node, path) {
+            const objectsName = "__objs"
+
+            if (node.type === "Program") {
+                node.body.unshift(
+                    b.VariableDeclaration(
+                        [b.VariableDeclarator(
+                            b.Identifier(objectsName),
+                            b.ArrayExpression([])
+                        )],
+                        "var"
+                    )
+                );
+
+//              node.body.push(
+//                  b.ForStatement(
+//                      b.VariableDeclaration(
+//                          [b.VariableDeclarator(
+//                              b.Identifier("i"),
+//                              b.Literal(0)
+//                          )],
+//                          "var"
+//                      ),
+//                      b.BinaryExpression(
+//                          b.Identifier("i"),
+//                          "<",
+//                          b.MemberExpression(
+//                              b.Identifier(objectsName),
+//                              b.Identifier("length")
+//                          )
+//                      ),
+//                      b.UpdateExpression(
+//                          b.Identifier("i"),
+//                          "++",
+//                          false
+//                      ),
+//                      b.BlockStatement(
+//                          [b.ExpressionStatement(
+//                              b.CallExpression(
+//                                  b.Identifier("println"),
+//                                  [b.MemberExpression(
+//                                      b.Identifier(objectsName),
+//                                      b.Identifier("i"),
+//                                      true
+//                                  )]
+//                              )
+//                          )]
+//                      )
+//                  )
+//              );
+            }
+        }
+    };
+}

@@ -87183,6 +87183,15 @@ require("/tools/entry-point.js");
 
 window.ASTBuilder = {
     /**
+     * @param {Array} elements
+     */
+    ArrayExpression: function ArrayExpression(elements) {
+        return {
+            type: "ArrayExpression",
+            elements: elements
+        };
+    },
+    /**
      * @param {Expression} left
      * @param {string} operator: "=", "+=", "-=", "*=", "/=", etc.
      * @param {Expression} right
@@ -87238,6 +87247,36 @@ window.ASTBuilder = {
         };
     },
     /**
+     * @param {Statement} init
+     * @param {Expression} test
+     * @param {Expression} update
+     * @param {Statement} body
+     */
+    ForStatement: function ForStatement(init, test, update, body) {
+        return {
+            type: "ForStatement",
+            init: init,
+            test: test,
+            update: update,
+            body: body
+        };
+    },
+    /**
+     * @param {string} id
+     * @param {Array} params
+     * @param {Statement} body
+     */
+    FunctionExpression: function FunctionExpression(id, params, body) {
+        return {
+            type: "FunctionExpression",
+            id: id,
+            params: params,
+            body: body,
+            generator: false,
+            expression: false
+        };
+    },
+    /**
      * @param {string} name
      */
     Identifier: function Identifier(name) {
@@ -87286,6 +87325,26 @@ window.ASTBuilder = {
         };
     },
     /**
+     * @param {Identifier} callee
+     * @param {Array} args
+     */
+    NewExpression: function NewExpression(callee, args) {
+        return {
+            type: "NewExpression",
+            callee: callee,
+            arguments: args
+        };
+    },
+    /**
+     * @param {Expression?} argument
+     */
+    ReturnStatement: function ReturnStatement(argument) {
+        return {
+            type: "ReturnStatement",
+            argument: argument
+        };
+    },
+    /**
      * @param {Expression} argument
      * @param {string} operator: "++" or "--"
      * @param {Boolean} prefix: true => ++argument, false => argument++
@@ -87307,6 +87366,17 @@ window.ASTBuilder = {
             type: "VariableDeclaration",
             declarations: declarations,
             kind: kind
+        };
+    },
+    /**
+     * @param {String} id
+     * @param {Expression?} init
+     */
+    VariableDeclarator: function VariableDeclarator(id, init) {
+        return {
+            type: "VariableDeclarator",
+            id: id,
+            init: init
         };
     }
 };
@@ -87854,6 +87924,77 @@ ASTTransforms.rewriteNewExpressions = function (envName) {
                 var _name = memberExpressionToString(node.callee);
 
                 return b.CallExpression(b.CallExpression(b.MemberExpression(b.MemberExpression(b.Identifier(envName), b.Identifier("PJSOutput")), b.Identifier("applyInstance")), [node.callee, b.Literal(_name)]), node.arguments);
+            }
+        }
+    };
+};
+
+// before: new Hoge()
+// after:  function() {
+//             var temp = new Hoge();
+//             __env__.__objs.push(temp);
+//             return temp;
+//         }()
+ASTTransforms.NewExpressionToFunction = function () {
+    return {
+        leave: function leave(node, path) {
+            if (node.type === "NewExpression") {
+                var _name2 = memberExpressionToString(node.callee);
+
+                return b.CallExpression(b.FunctionExpression(null, [], b.BlockStatement([b.VariableDeclaration([b.VariableDeclarator(b.Identifier("temp"), b.NewExpression(node.callee, node.arguments))], "var"), b.ExpressionStatement(b.CallExpression(b.MemberExpression(b.Identifier("__objs"), b.Identifier("push")), [b.Identifier("temp")])), b.ReturnStatement(b.Identifier("temp"))])), []);
+            }
+        }
+    };
+};
+
+// Add "var __objs = [];" at the head of the code
+// (and "for (var i = 0; i < __objs.length; i++) {
+//           println(__objs[i])
+//       }" at the tail of the code)
+ASTTransforms.Add__objsCode = function () {
+    return {
+        leave: function leave(node, path) {
+            var objectsName = "__objs";
+
+            if (node.type === "Program") {
+                node.body.unshift(b.VariableDeclaration([b.VariableDeclarator(b.Identifier(objectsName), b.ArrayExpression([]))], "var"));
+
+                //              node.body.push(
+                //                  b.ForStatement(
+                //                      b.VariableDeclaration(
+                //                          [b.VariableDeclarator(
+                //                              b.Identifier("i"),
+                //                              b.Literal(0)
+                //                          )],
+                //                          "var"
+                //                      ),
+                //                      b.BinaryExpression(
+                //                          b.Identifier("i"),
+                //                          "<",
+                //                          b.MemberExpression(
+                //                              b.Identifier(objectsName),
+                //                              b.Identifier("length")
+                //                          )
+                //                      ),
+                //                      b.UpdateExpression(
+                //                          b.Identifier("i"),
+                //                          "++",
+                //                          false
+                //                      ),
+                //                      b.BlockStatement(
+                //                          [b.ExpressionStatement(
+                //                              b.CallExpression(
+                //                                  b.Identifier("println"),
+                //                                  [b.MemberExpression(
+                //                                      b.Identifier(objectsName),
+                //                                      b.Identifier("i"),
+                //                                      true
+                //                                  )]
+                //                              )
+                //                          )]
+                //                      )
+                //                  )
+                //              );
             }
         }
     };
