@@ -378,9 +378,6 @@ ASTTransforms.NewExpressionToFunction = function() {
 }
 
 // Add "var __objs = [];" at the head of the code
-// (and "for (var i = 0; i < __objs.length; i++) {
-//           println(__objs[i])
-//       }" at the tail of the code)
 ASTTransforms.Add__objsCode = function() {
     return {
         leave(node, path) {
@@ -396,43 +393,6 @@ ASTTransforms.Add__objsCode = function() {
                         "var"
                     )
                 );
-
-//              node.body.push(
-//                  b.ForStatement(
-//                      b.VariableDeclaration(
-//                          [b.VariableDeclarator(
-//                              b.Identifier("i"),
-//                              b.Literal(0)
-//                          )],
-//                          "var"
-//                      ),
-//                      b.BinaryExpression(
-//                          b.Identifier("i"),
-//                          "<",
-//                          b.MemberExpression(
-//                              b.Identifier(objectsName),
-//                              b.Identifier("length")
-//                          )
-//                      ),
-//                      b.UpdateExpression(
-//                          b.Identifier("i"),
-//                          "++",
-//                          false
-//                      ),
-//                      b.BlockStatement(
-//                          [b.ExpressionStatement(
-//                              b.CallExpression(
-//                                  b.Identifier("println"),
-//                                  [b.MemberExpression(
-//                                      b.Identifier(objectsName),
-//                                      b.Identifier("i"),
-//                                      true
-//                                  )]
-//                              )
-//                          )]
-//                      )
-//                  )
-//              );
             }
         }
     };
